@@ -15,6 +15,7 @@ def apply_settings():
         "TIME_OVER_SOUND" : end_entry.get(),
         "TIMER_FONT" : (timer_font_entry.get(), int(timer_fontsize_entry.get())),
         "HELP_FONT" : (help_font_entry.get(), int(help_fontsize_entry.get())),
+        "HELP_DURATION" : (help_duration_entry.get(), int(help_duration_entry.get())),
         "TEXT_COLOR" : text_color_entry.get(),
         "BACKGROUND_COLOR" : background_color_entry.get(),
         "BACKGROUND_IMAGE_TIMER": background_image_timer_entry.get(),
@@ -63,10 +64,7 @@ def refresh_menu_colors(frame):
 def send_help_message():
     message = help_text.get("1.0", tk.END).strip()
     if message:
-        show_help_message(message,font=settings.get("HELP_FONT", ""),
-                        fg=settings.get("TEXT_COLOR", ""),
-                        bg=settings.get("BACKGROUND_COLOR", ""),
-                        sound=settings.get("HELP_TRACK", ""))
+        show_help_message(message)
         help_text.delete("1.0", tk.END)
 
 # --- Initialization ---
@@ -155,6 +153,7 @@ timer_fontsize_entry = labeled_entry(settings_frame, "Timer Font Size:", setting
 timer_font_entry = labeled_entry(settings_frame, "Timer Font:", settings.get("TIMER_FONT", "")[0], width=20)
 help_fontsize_entry = labeled_entry(settings_frame, "Help Font Size:", settings.get("HELP_FONT", "")[1], width=10)
 help_font_entry = labeled_entry(settings_frame, "Help Font:", settings.get("HELP_FONT", "")[0], width=20)
+help_duration_entry = labeled_entry(settings_frame, "Help Duration:", settings.get("HELP_DURATION", ""), width=20)
 timer_entry = labeled_entry(settings_frame, "Time (minutes):", settings.get("TIMER_MINUTES", ""), width=10)
 
 # Monitor dropdown

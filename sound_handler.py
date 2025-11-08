@@ -1,10 +1,13 @@
 import pygame
 import threading
 import time
+from settings_manager import load_settings
 
 pygame.mixer.init()
 
-def play_sound(filepath, duration_ms=None):
+def play_sound(track, duration_ms=None):
+    settings = load_settings()
+    filepath = settings.get(track)
     def target():
         sound = pygame.mixer.Sound(filepath)
         channel = sound.play()

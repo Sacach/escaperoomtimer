@@ -9,22 +9,20 @@ import pygetwindow as gw
 from screeninfo import get_monitors
 from tkinter import filedialog
 
-VLC_PATH= r"C:/Program Files/VideoLAN/VLC/vlc.exe"
-
 TIMER_MINUTES = 60
 FONT_SIZE_TIMER = 500
 FONT_SIZE_HELP = 65
-VIDEO_PATH = "isadora-video.mp4"
-HELP_TRACK = "test_laugh.mp3"
-INTERVAL_SOUND = "scream.mp3"
-TIME_OVER_SOUND = "Rituaali.mp3"
+VLC_PATH= r"C:/Program Files/VideoLAN/VLC/vlc.exe"
+VIDEO_PATH = "escaperoomtimer/isadora-video.mp4"
+HELP_TRACK = "escaperoomtimer/test_laugh.mp3"
+INTERVAL_SOUND = "escaperoomtimer/scream.mp3"
+TIME_OVER_SOUND = "escaperoomtimer/Rituaali.mp3"
+HELP_FILE = "escaperoomtimer/ohjeet.txt"
 TIMER_FONT = ("UnifrakturCook", FONT_SIZE_TIMER)
 HELP_FONT = ("Rubik Distressed", FONT_SIZE_HELP)
 BACKGROUND_COLOR = "black"
 TEXT_COLOR = "red"
 SETTINGS_FILE = "escaperoom_settings.json"
-
-
 
 HELP_DURATION = 20000
 DELAY_AFTER_VIDEO = 1
@@ -38,42 +36,12 @@ pygame.mixer.init()
 
 monitors = get_monitors()
 
-root = tk.Tk()
-selected_monitor = tk.StringVar(value=monitors[0].name)
+if len(monitors) > 1:
+    MONITOR = monitors[1]
+else:
+    MONITOR = monitors[0]
 
-#print(monitors)
-
-def load_settings():
-    global VIDEO_PATH, HELP_TRACK, INTERVAL_SOUND
-    global TIME_OVER_SOUND, TIMER_FONT, HELP_FONT
-    global TIMER_MINUTES, MONITOR, TEXT_COLOR, BACKGROUND_COLOR
-
-    if not os.path.exists(SETTINGS_FILE):
-        #print("No saved settings found — using defaults.")
-        return
-
-    with open(SETTINGS_FILE, "r") as f:
-        settings = json.load(f)
-
-    VIDEO_PATH = settings.get("VIDEO_PATH", VIDEO_PATH)
-    HELP_TRACK = settings.get("HELP_TRACK", HELP_TRACK)
-    INTERVAL_SOUND = settings.get("INTERVAL_SOUND", INTERVAL_SOUND)
-    TIME_OVER_SOUND = settings.get("TIME_OVER_SOUND", TIME_OVER_SOUND)
-    TIMER_FONT = tuple(settings.get("TIMER_FONT", TIMER_FONT))
-    HELP_FONT = tuple(settings.get("HELP_FONT", HELP_FONT))
-    TIMER_MINUTES = int(settings.get("TIMER_MINUTES", TIMER_MINUTES))
-    BACKGROUND_COLOR = settings.get("BACKGROUND_COLOR", BACKGROUND_COLOR)
-    TEXT_COLOR = settings.get("TEXT_COLOR", TEXT_COLOR)
-
-    # Monitor handling
-    for m in monitors:
-        if m.name == settings.get("MONITOR"):
-            MONITOR = m
-            selected_monitor.set(m.name)
-            break
-    #print("Settings loaded")
-
-load_settings()
+print(monitors)
 
 def fix_path(path):
     return path.replace("/", "\\")
@@ -100,7 +68,7 @@ def play_video():
         
         video.wait()
 
-        #print("Video finished!")
+        print("Video finished!")
         root.after(0, show_timer)
 
     t = threading.Thread(target=target)
@@ -248,7 +216,38 @@ def save_settings():
     }
     with open(SETTINGS_FILE, "w") as f:
         json.dump(settings, f, indent=4)
-    #print("Settings saved")
+    print("✅ Settings saved")
+
+def load_settings():
+    global VIDEO_PATH, HELP_TRACK, INTERVAL_SOUND
+    global TIME_OVER_SOUND, TIMER_FONT, HELP_FONT
+    global TIMER_MINUTES, MONITOR, TEXT_COLOR, BACKGROUND_COLOR
+
+    if not os.path.exists(SETTINGS_FILE):
+        print("⚠️ No saved settings found — using defaults.")
+        return
+
+    with open(SETTINGS_FILE, "r") as f:
+        settings = json.load(f)
+
+    VIDEO_PATH = settings.get("VIDEO_PATH", VIDEO_PATH)
+    HELP_TRACK = settings.get("HELP_TRACK", HELP_TRACK)
+    INTERVAL_SOUND = settings.get("INTERVAL_SOUND", INTERVAL_SOUND)
+    TIME_OVER_SOUND = settings.get("TIME_OVER_SOUND", TIME_OVER_SOUND)
+    TIMER_FONT = tuple(settings.get("TIMER_FONT", TIMER_FONT))
+    HELP_FONT = tuple(settings.get("HELP_FONT", HELP_FONT))
+    TIMER_MINUTES = int(settings.get("TIMER_MINUTES", TIMER_MINUTES))
+    BACKGROUND_COLOR = settings.get("BACKGROUND_COLOR", BACKGROUND_COLOR)
+    TEXT_COLOR = settings.get("TEXT_COLOR", TEXT_COLOR)
+
+    # Monitor handling
+    for m in monitors:
+        if m.name == settings.get("MONITOR"):
+            MONITOR = m
+            selected_monitor.set(m.name)
+            break
+
+    print("✅ Settings loaded")
 
 def browse_file(entry_widget, filetypes=(("All files", "*.*"),)):
     filename = filedialog.askopenfilename(filetypes=filetypes)
@@ -256,13 +255,14 @@ def browse_file(entry_widget, filetypes=(("All files", "*.*"),)):
         entry_widget.delete(0, tk.END)
         entry_widget.insert(0, filename)
 
+root = tk.Tk()
+
+selected_monitor = tk.StringVar(value=monitors[0].name)
 
 root.title("Escape Room Controller")
 root.geometry("900x700")
 root.protocol("WM_DELETE_WINDOW", on_close)
-
-print(BACKGROUND_COLOR)
-root.configure(bg=BACKGROUND_COLOR)
+root.configure(bg="black")
 
 # --- SETTINGS TOGGLE BUTTON ---
 toggle_btn = tk.Button(
@@ -277,11 +277,11 @@ toggle_btn = tk.Button(
 toggle_btn.pack(anchor="ne", padx=15, pady=10)
 
 # --- CONTROL FRAME ---
-control_frame = tk.Frame(root, bg=BACKGROUND_COLOR)
+control_frame = tk.Frame(root, bg="black")
 control_frame.pack(fill="both", expand=True)
 
 # --- SETTINGS FRAME ---
-settings_frame = tk.Frame(root, bg=BACKGROUND_COLOR)
+settings_frame = tk.Frame(root, bg="black")
 # no pack yet — hidden at start
 
 def show_settings():
@@ -332,6 +332,8 @@ def labeled_entry_with_browse(label_text, default_value, filetypes):
     frame.grid_columnconfigure(1, weight=1)
 
     return entry
+
+load_settings()
 
 # --- Now create all your fields ---
 video_entry = labeled_entry_with_browse("Video Path:", VIDEO_PATH,
@@ -389,7 +391,7 @@ stop_btn.pack(side=tk.LEFT, padx=5)
 timer_heading = tk.Label(timer_frame, text="Timer Control", font=("Arial", 18, "bold"), fg="green", bg="black")
 timer_heading.pack(pady=(10, 10)) 
 
-controller_timer_label = tk.Label(timer_frame, text="", font=("Arial", 20), fg=TEXT_COLOR, bg="black")
+controller_timer_label = tk.Label(timer_frame, text="", font=("Arial", 20), fg="red", bg="black")
 controller_timer_label.pack(pady=10)
 
 pause_btn = tk.Button(control_frame, text="Pause/Resume", command=toggle_pause)
@@ -405,9 +407,7 @@ help_frame = tk.Frame(control_frame, bg="black")
 help_frame.pack(pady=5, fill="x")
 
 help_text = tk.Text(help_frame, height=4, width=70, font=("Arial", 14), fg="white", bg="black")
-help_text.pack(side=tk.LEFT, padx=60, pady=5)
-
-help_text.config(insertbackground="white")
+help_text.pack(side=tk.LEFT, padx=5, pady=5)
 
 send_btn = tk.Button(control_frame, text="Send", command=send_help_message)
 send_btn.pack(pady=10)

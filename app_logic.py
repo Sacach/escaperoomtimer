@@ -5,7 +5,6 @@ from sound_handler import play_sound
 from settings_manager import load_settings
 from screeninfo import get_monitors
 
-HELP_DURATION = 20000
 MONITOR = None
 RUNNING = True
 controller_timer_label = None
@@ -18,29 +17,7 @@ def get_selected_monitor():
     monitors = get_monitors()
     return next((m for m in monitors if m.name == monitor_name), monitors[0])
 
-def show_help_message(message, duration=HELP_DURATION, font=("Arial", 20), fg="red", bg="black", sound=None):
-    """
-    help_win = tk.Toplevel()
-    settings = load_settings()
-    monitor = get_selected_monitor()
-    bg_image_path = settings.get("BACKGROUND_IMAGE_HELP", "")
-    
-    if bg_image_path and os.path.exists(bg_image_path):
-        image = Image.open(bg_image_path)
-        image = image.resize((monitor.width, monitor.height))
-        bg_image = ImageTk.PhotoImage(image)
-        bg_label = tk.Label(timer_window, image=bg_image)
-        bg_label.image = bg_image
-        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
-        bg = None
-    else:
-        timer_window.configure(bg=bg)
-
-    help_win.geometry(f"{monitor.width}x{monitor.height}+{monitor.x}+{monitor.y}")
-    help_win.overrideredirect(True)
-    help_win.configure(bg=bg)
-    help_label = tk.Label(help_win, text=message, wraplength=1800, font=font, fg=fg, bg=bg)
-    help_label.pack(expand=True)"""
+def show_help_message(message):
     settings = load_settings()
     monitor = get_selected_monitor()
     bg_image_path = settings.get("BACKGROUND_IMAGE_HELP", "")
@@ -62,8 +39,8 @@ def show_help_message(message, duration=HELP_DURATION, font=("Arial", 20), fg="r
             monitor.width // 2,
             monitor.height // 2,
             text=message,
-            font=font,
-            fill=fg,
+            font=settings.get("HELP_FONT", "(\"Arial\", 14)"),
+            fill=settings.get("TEXT_COLOR", "red"),
             width=1800,
             anchor="center"
         )
@@ -73,21 +50,20 @@ def show_help_message(message, duration=HELP_DURATION, font=("Arial", 20), fg="r
 
     else:
         help_win.configure(bg=bg)
-        canvas = tk.Canvas(help_win, width=monitor.width, height=monitor.height, highlightthickness=0, bg=bg)
+        canvas = tk.Canvas(help_win, width=monitor.width, height=monitor.height, highlightthickness=0, bg=settings.get("BACKGROUND_COLOR", "black"))
         canvas.pack(fill="both", expand=True)
         _ = canvas.create_text(
             monitor.width // 2,
             monitor.height // 2,
             text=message,
-            font=font,
-            fill=fg,
+            font=settings.get("HELP_FONT", "(\"Arial\", 14)"),
+            fill=settings.get("TEXT_COLOR", "red"),
             width=1800,
             anchor="center"
         )
 
-    if sound:
-        play_sound(sound, duration_ms=duration)
-    help_win.after(duration, help_win.destroy)
+    play_sound(settings.get("HELP_TRACK", "red"))
+    help_win.after(settings.get("HELP_DURATION", "20"), help_win.destroy)
 
 def toggle_pause():
     global RUNNING
@@ -136,8 +112,8 @@ def show_timer(controller_timer_label, duration_seconds=None):
     def update():
         nonlocal duration_seconds
         minutes, seconds = divmod(duration_seconds, 60)
-        interval_sound = settings.get("INTERVAL_SOUND", "")
-        end_sound = settings.get("TIME_OVER_SOUND", "")
+        interval_sound = "INTERVAL_SOUND"
+        end_sound = "TIME_OVER_SOUND"
         #timer_label.config(text=f"{minutes:02}:{seconds:02}")
         canvas.itemconfig(timer_text_id, text=f"{minutes:02}:{seconds:02}")
         controller_timer_label.config(text=f"{minutes:02}:{seconds:02}")
